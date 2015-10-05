@@ -1,18 +1,27 @@
 package com.byteshaft.itourguide;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
     Button acquireLocationButton;
     LocationService locationService;
     LocationHelpers locationHelpers;
+    ListView listView;
+    ArrayAdapter arrayAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         locationHelpers = new LocationHelpers(MainActivity.this);
         acquireLocationButton = (Button) findViewById(R.id.location_button);
+        listView = (ListView) findViewById(R.id.lv_main);
+        arrayAdapter = new PlaceList(this, R.layout.row, DataVariables.one);
+        listView.setAdapter(arrayAdapter);
         if (!locationHelpers.playServicesAvailable()) {
             locationHelpers.showGooglePlayServicesError(MainActivity.this);
         }
@@ -54,4 +66,40 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    class PlaceList extends ArrayAdapter<String> {
+
+        int mResource;
+
+        public PlaceList(Context context, int resource, String[] objects) {
+            super(context, resource, objects);
+            mResource = resource;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            Log.i("test", "getView");
+            if (convertView == null) {
+                LayoutInflater inflater = getLayoutInflater();
+                convertView = inflater.inflate(mResource, parent, false);
+                holder = new ViewHolder();
+                holder.name = (TextView) convertView.findViewById(R.id.tv_name);
+                holder.description = (TextView) convertView.findViewById(R.id.tv_description);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            holder.name.setText(DataVariables.one[0]);
+            holder.description.setText(DataVariables.one[1]);
+            return convertView;
+        }
+    }
+
+    static class ViewHolder {
+        public TextView name;
+        public TextView description;
+    }
+
 }
