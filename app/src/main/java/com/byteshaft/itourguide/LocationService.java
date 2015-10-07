@@ -76,7 +76,7 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.i("KidMonitor", "onLocationChanged CALLED..." + mLocationChangedCounter);
+        Log.i("Location", "onLocationChanged CALLED..." + mLocationChangedCounter);
         mLocationChangedCounter++;
 
         if (mLocationChangedCounter == 3) {
@@ -93,14 +93,17 @@ public class LocationService extends ContextWrapper implements LocationListener,
             for (int i = 0; i < DataVariables.array.length; i++) {
                 Double storedLat = Double.parseDouble(DataVariables.array[i][2]);
                 Double storedLon = Double.parseDouble(DataVariables.array[i][3]);
-                if (distance(storedLat, storedLon, LocationService.lat2, LocationService.lng2) < 2000) {
+                if (distance(storedLat, storedLon, LocationService.lat2, LocationService.lng2) < 2) {
                     Log.i("In Range", DataVariables.array[i][0]);
                     storedLocations.add(DataVariables.array[i]);
                 }
             }
-            MainActivity.listView.setAdapter(MainActivity.arrayAdapter);
+            MainActivity.filteredLocations = storedLocations;
+            MainActivity.instance.recreate();
+//            MainActivity.listView.setAdapter(MainActivity.arrayAdapter);
         }
     }
+
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
