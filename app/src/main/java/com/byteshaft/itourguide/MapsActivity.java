@@ -33,11 +33,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        LatLng currentLocation = new LatLng(LocationService.latitude, LocationService.longitude);
+        LatLng currentLocation = new LatLng(MainActivity.finalLat, MainActivity.finalLon);
         mMap.addMarker(new MarkerOptions().position(currentLocation).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(LocationService.latitude,
-                LocationService.longitude), 16.0f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(MainActivity.finalLat, MainActivity.finalLon), 16.0f));
         satelliteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

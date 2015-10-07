@@ -23,11 +23,12 @@ public class MainActivity extends AppCompatActivity {
     Button acquireLocationButton;
     LocationService locationService;
     LocationHelpers locationHelpers;
-    Button mapsTest;
     static ListView listView;
     static ArrayAdapter arrayAdapter;
     static ArrayList<String[]> filteredLocations;
     public static MainActivity instance;
+    public static Double finalLat;
+    public static Double finalLon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +38,6 @@ public class MainActivity extends AppCompatActivity {
         locationHelpers = new LocationHelpers(MainActivity.this);
         acquireLocationButton = (Button) findViewById(R.id.location_button);
         listView = (ListView) findViewById(R.id.lv_main);
-        mapsTest = (Button) findViewById(R.id.mapsButton);
-        mapsTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, MapsActivity.class));
-            }
-        });
         arrayAdapter = new PlaceList(this, R.layout.row, filteredLocations);
         if (filteredLocations != null) {
             listView.setAdapter(arrayAdapter);
@@ -51,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     Toast.makeText(getApplicationContext(), String.valueOf(filteredLocations.get(position)[3]), Toast.LENGTH_LONG).show();
+                    finalLat = Double.parseDouble(filteredLocations.get(position)[2]);
+                    finalLon = Double.parseDouble(filteredLocations.get(position)[3]);
+                    startActivity(new Intent(MainActivity.this, MapsActivity.class));
                 }
             });
         }
