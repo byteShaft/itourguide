@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,7 +21,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button acquireLocationButton;
+    public static Button acquireLocationButton;
+    ImageView imageViewName;
     LocationService locationService;
     LocationHelpers locationHelpers;
     static ListView listView;
@@ -36,7 +38,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         instance = this;
         locationHelpers = new LocationHelpers(MainActivity.this);
-        acquireLocationButton = (Button) findViewById(R.id.location_button);
+        imageViewName = (ImageView) findViewById(R.id.iv_name);
+        acquireLocationButton = (Button) findViewById(R.id.button_acquire_location);
         listView = (ListView) findViewById(R.id.lv_main);
         arrayAdapter = new PlaceList(this, R.layout.row, filteredLocations);
         if (filteredLocations != null) {
@@ -57,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         acquireLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                imageViewName.setVisibility(View.GONE);
                 locationHelpers = new LocationHelpers(getApplicationContext());
                 if (locationHelpers.playServicesAvailable() && !locationHelpers.isAnyLocationServiceAvailable()) {
                     AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);

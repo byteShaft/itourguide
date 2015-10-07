@@ -13,13 +13,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
@@ -127,9 +120,16 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
         if (mTimer == null) {
             mTimer = new CountDownTimer(120000, 1000) {
+                int dummyNumber = 0;
                 @Override
                 public void onTick(long millisUntilFinished) {
                     Log.i("Location", "Timer: " + millisUntilFinished / 1000);
+                    dummyNumber++;
+                    if ((dummyNumber % 2) == 0) {
+                        MainActivity.acquireLocationButton.setRotation(0);
+                    } else {
+                        MainActivity.acquireLocationButton.setRotation(90);
+                    }
                 }
 
                 @Override
