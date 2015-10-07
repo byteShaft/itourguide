@@ -6,28 +6,34 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     Button acquireLocationButton;
     LocationService locationService;
     LocationHelpers locationHelpers;
-    ListView listView;
-    ArrayAdapter arrayAdapter;
     Button mapsTest;
+    static ListView listView;
+    static ArrayAdapter arrayAdapter;
+    static ArrayList<String[]> filteredLocations;
+    public static MainActivity instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        instance = this;
         locationHelpers = new LocationHelpers(MainActivity.this);
         acquireLocationButton = (Button) findViewById(R.id.location_button);
         listView = (ListView) findViewById(R.id.lv_main);
@@ -38,8 +44,16 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, MapsActivity.class));
             }
         });
-        arrayAdapter = new PlaceList(this, R.layout.row, DataVariables.one);
-        listView.setAdapter(arrayAdapter);
+        arrayAdapter = new PlaceList(this, R.layout.row, filteredLocations);
+        if (filteredLocations != null) {
+            listView.setAdapter(arrayAdapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Toast.makeText(getApplicationContext(), String.valueOf(filteredLocations.get(position)[3]), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
         if (!locationHelpers.playServicesAvailable()) {
             locationHelpers.showGooglePlayServicesError(MainActivity.this);
         }
@@ -75,12 +89,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
     class PlaceList extends ArrayAdapter<String> {
 
         int mResource;
-
-        public PlaceList(Context context, int resource, String[] objects) {
+        public PlaceList(Context context, int resource, ArrayList objects) {
             super(context, resource, objects);
             mResource = resource;
         }
@@ -88,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewHolder holder;
-            Log.i("test", "getView");
             if (convertView == null) {
                 LayoutInflater inflater = getLayoutInflater();
                 convertView = inflater.inflate(mResource, parent, false);
@@ -99,8 +110,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
-            holder.name.setText(DataVariables.one[0]);
-            holder.description.setText(DataVariables.one[1]);
+            holder.name.setText(filteredLocations.get(position)[0]);
+            holder.description.setText(filteredLocations.get(position)[1]);
             return convertView;
         }
     }
@@ -109,5 +120,4 @@ public class MainActivity extends AppCompatActivity {
         public TextView name;
         public TextView description;
     }
-
 }

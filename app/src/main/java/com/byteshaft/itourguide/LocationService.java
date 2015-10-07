@@ -21,6 +21,8 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
 public class LocationService extends ContextWrapper implements LocationListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
@@ -31,9 +33,8 @@ public class LocationService extends ContextWrapper implements LocationListener,
     private CountDownTimer mTimer;
     static double latitude;
     static double longitude;
-    static float distance = 0;
-    static float distance2 = 0;
-    static float distance3 = 0;
+    public static Double lat2;
+    public static Double lng2;
 
     public LocationService(Context context) {
         super(context);
@@ -84,19 +85,38 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.i("KidMonitor", "onLocationChanged CALLED..." + mLocationChangedCounter);
+        Log.i("Location", "onLocationChanged CALLED..." + mLocationChangedCounter);
         mLocationChangedCounter++;
+
         if (mLocationChangedCounter == 3) {
             mLocation = location;
             String lat = String.valueOf(mLocation.getLatitude());
             String lon = String.valueOf(mLocation.getLongitude());
             latitude = mLocation.getLatitude();
             longitude = mLocation.getLongitude();
+            lat2 = mLocation.getLatitude();
+            lng2 = mLocation.getLongitude();
+            Log.i("Location", lat2 + ", " + lng2);
             Toast.makeText(getApplicationContext(), "Location acquired", Toast.LENGTH_SHORT).show();
             stopLocationService();
             mLocationChangedCounter = 0;
+
+            ArrayList<String[]> storedLocations = new ArrayList<>();
+
+            for (int i = 0; i < DataVariables.array.length; i++) {
+                Double storedLat = Double.parseDouble(DataVariables.array[i][2]);
+                Double storedLon = Double.parseDouble(DataVariables.array[i][3]);
+                if (distance(storedLat, storedLon, LocationService.lat2, LocationService.lng2) < 2) {
+                    Log.i("In Range", DataVariables.array[i][0]);
+                    storedLocations.add(DataVariables.array[i]);
+                }
+            }
+            MainActivity.filteredLocations = storedLocations;
+            MainActivity.instance.recreate();
+//            MainActivity.listView.setAdapter(MainActivity.arrayAdapter);
         }
     }
+
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -123,5 +143,25 @@ public class LocationService extends ContextWrapper implements LocationListener,
             };
         }
         return mTimer;
+    }
+
+    private double distance(double lat1, double lng1, double lat2, double lng2) {
+
+        double earthRadius = 6371;
+
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLng = Math.toRadians(lng2-lng1);
+
+        double sindLat = Math.sin(dLat / 2);
+        double sindLng = Math.sin(dLng / 2);
+
+        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
+                * Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2));
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        double dist = earthRadius * c;
+
+        return dist;
     }
 }
