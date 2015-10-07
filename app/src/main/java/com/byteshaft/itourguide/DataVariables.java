@@ -14,5 +14,5 @@ public class DataVariables {
     static String[] four = new String[] {"KFC", "KFC IS HERE", "30.195454", "71.442381"};
 
     static String[][] array = {one, two, three, four};
-    
+
 }

@@ -9,10 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -24,15 +26,26 @@ public class MainActivity extends AppCompatActivity {
     static ListView listView;
     static ArrayAdapter arrayAdapter;
     static ArrayList<String[]> filteredLocations;
+    public static MainActivity instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        instance = this;
         locationHelpers = new LocationHelpers(MainActivity.this);
         acquireLocationButton = (Button) findViewById(R.id.location_button);
         listView = (ListView) findViewById(R.id.lv_main);
-        arrayAdapter = new PlaceList(AppGlobals.getContext(), R.layout.row, filteredLocations);
+        arrayAdapter = new PlaceList(this, R.layout.row, filteredLocations);
+        if (filteredLocations != null) {
+            listView.setAdapter(arrayAdapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Toast.makeText(getApplicationContext(), String.valueOf(filteredLocations.get(position)[3]), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
         if (!locationHelpers.playServicesAvailable()) {
             locationHelpers.showGooglePlayServicesError(MainActivity.this);
         }
