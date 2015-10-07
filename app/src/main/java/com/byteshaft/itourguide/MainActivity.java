@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     Button acquireLocationButton;
     LocationService locationService;
     LocationHelpers locationHelpers;
+    Button mapsTest;
     static ListView listView;
     static ArrayAdapter arrayAdapter;
     static ArrayList<String[]> filteredLocations;
@@ -36,6 +37,13 @@ public class MainActivity extends AppCompatActivity {
         locationHelpers = new LocationHelpers(MainActivity.this);
         acquireLocationButton = (Button) findViewById(R.id.location_button);
         listView = (ListView) findViewById(R.id.lv_main);
+        mapsTest = (Button) findViewById(R.id.mapsButton);
+        mapsTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, MapsActivity.class));
+            }
+        });
         arrayAdapter = new PlaceList(this, R.layout.row, filteredLocations);
         if (filteredLocations != null) {
             listView.setAdapter(arrayAdapter);

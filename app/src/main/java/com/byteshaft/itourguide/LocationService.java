@@ -13,17 +13,26 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
 public class LocationService extends ContextWrapper implements LocationListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
     public GoogleApiClient mGoogleApiClient;
     public Location mLocation;
     private int mLocationChangedCounter = 0;
     private LocationRequest mLocationRequest;
     private CountDownTimer mTimer;
+    static double latitude;
+    static double longitude;
     public static Double lat2;
     public static Double lng2;
 
@@ -81,6 +90,10 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
         if (mLocationChangedCounter == 3) {
             mLocation = location;
+            String lat = String.valueOf(mLocation.getLatitude());
+            String lon = String.valueOf(mLocation.getLongitude());
+            latitude = mLocation.getLatitude();
+            longitude = mLocation.getLongitude();
             lat2 = mLocation.getLatitude();
             lng2 = mLocation.getLongitude();
             Log.i("Location", lat2 + ", " + lng2);
