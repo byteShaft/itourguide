@@ -2,10 +2,13 @@ package com.byteshaft.itourguide;
 
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -28,6 +31,7 @@ public class LocationService extends ContextWrapper implements LocationListener,
     static double longitude;
     public static Double lat2;
     public static Double lng2;
+    SharedPreferences sharedPreferences;
 
     public LocationService(Context context) {
         super(context);
@@ -83,8 +87,8 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
         if (mLocationChangedCounter == 3) {
             mLocation = location;
-            String lat = String.valueOf(mLocation.getLatitude());
-            String lon = String.valueOf(mLocation.getLongitude());
+            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            int radiusOne = sharedPreferences.getInt("radius_one", 10);
             latitude = mLocation.getLatitude();
             longitude = mLocation.getLongitude();
             lat2 = mLocation.getLatitude();
@@ -99,14 +103,13 @@ public class LocationService extends ContextWrapper implements LocationListener,
             for (int i = 0; i < DataVariables.array.length; i++) {
                 Double storedLat = Double.parseDouble(DataVariables.array[i][2]);
                 Double storedLon = Double.parseDouble(DataVariables.array[i][3]);
-                if (distance(storedLat, storedLon, LocationService.lat2, LocationService.lng2) < 2) {
+                if (distance(storedLat, storedLon, LocationService.lat2, LocationService.lng2) < radiusOne) {
                     Log.i("In Range", DataVariables.array[i][0]);
                     storedLocations.add(DataVariables.array[i]);
                 }
             }
             MainActivity.filteredLocations = storedLocations;
             MainActivity.instance.recreate();
-//            MainActivity.listView.setAdapter(MainActivity.arrayAdapter);
         }
     }
 
@@ -127,8 +130,10 @@ public class LocationService extends ContextWrapper implements LocationListener,
                     dummyNumber++;
                     if ((dummyNumber % 2) == 0) {
                         MainActivity.acquireLocationButton.setRotation(0);
+                        MainActivity.imageViewName.setVisibility(View.VISIBLE);
                     } else {
                         MainActivity.acquireLocationButton.setRotation(90);
+                        MainActivity.imageViewName.setVisibility(View.INVISIBLE);
                     }
                 }
 
@@ -136,8 +141,9 @@ public class LocationService extends ContextWrapper implements LocationListener,
                 public void onFinish() {
                     if (mGoogleApiClient.isConnected()) {
                         stopLocationService();
-                        Log.i("Location", "Location cannot be acquired.");
-                            /* TODO: Implement Response */
+                        Toast.makeText(getApplicationContext(), "Current location cannot be acquired", Toast.LENGTH_SHORT).show();
+                        MainActivity.imageViewName.setImageResource(R.mipmap.name_main);
+                        MainActivity.imageViewName.setVisibility(View.VISIBLE);
                     }
                 }
             };
