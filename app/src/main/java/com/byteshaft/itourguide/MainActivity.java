@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     public static Double finalLat;
     public static Double finalLon;
     SharedPreferences sharedPreferences;
+    public static boolean isMapActivityOpen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

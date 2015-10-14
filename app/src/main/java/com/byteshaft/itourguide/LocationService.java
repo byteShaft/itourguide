@@ -16,6 +16,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
@@ -36,7 +39,9 @@ public class LocationService extends ContextWrapper implements LocationListener,
     public LocationService(Context context) {
         super(context);
         connectingGoogleApiClient();
-        locationTimer().start();
+        if (!MainActivity.isMapActivityOpen) {
+            locationTimer().start();
+        }
     }
 
     public void connectingGoogleApiClient() {
@@ -84,32 +89,47 @@ public class LocationService extends ContextWrapper implements LocationListener,
     public void onLocationChanged(Location location) {
         Log.i("Location", "onLocationChanged CALLED..." + mLocationChangedCounter);
         mLocationChangedCounter++;
-
-        if (mLocationChangedCounter == 3) {
+        if (MainActivity.isMapActivityOpen) {
             mLocation = location;
-            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            int radiusOne = sharedPreferences.getInt("radius_one", 10);
-            latitude = mLocation.getLatitude();
-            longitude = mLocation.getLongitude();
-            lat2 = mLocation.getLatitude();
-            lng2 = mLocation.getLongitude();
-            Log.i("Location", lat2 + ", " + lng2);
-            Toast.makeText(getApplicationContext(), "Location acquired", Toast.LENGTH_SHORT).show();
-            stopLocationService();
-            mLocationChangedCounter = 0;
-
-            ArrayList<String[]> storedLocations = new ArrayList<>();
-
-            for (int i = 0; i < DataVariables.array.length; i++) {
-                Double storedLat = Double.parseDouble(DataVariables.array[i][2]);
-                Double storedLon = Double.parseDouble(DataVariables.array[i][3]);
-                if (distance(storedLat, storedLon, LocationService.lat2, LocationService.lng2) < radiusOne) {
-                    Log.i("In Range", DataVariables.array[i][0]);
-                    storedLocations.add(DataVariables.array[i]);
-                }
+            double lat = mLocation.getLatitude();
+            double lon = mLocation.getLongitude();
+            LatLng currentLocation = new LatLng(lat, lon);
+            if (mLocationChangedCounter == 1) {
+                MapsActivity.
+                        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Current Location")
+                        .icon(BitmapDescriptorFactory.fromResource
+                                (R.drawable.ic_location)).draggable(true));
+            } else if (mLocationChangedCounter > 1) {
+                MapsActivity.a.position(currentLocation);
             }
-            MainActivity.filteredLocations = storedLocations;
-            MainActivity.instance.recreate();
+        }
+         else {
+            if (mLocationChangedCounter == 3) {
+                mLocation = location;
+                sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                int radiusOne = sharedPreferences.getInt("radius_one", 10);
+                latitude = mLocation.getLatitude();
+                longitude = mLocation.getLongitude();
+                lat2 = mLocation.getLatitude();
+                lng2 = mLocation.getLongitude();
+                Log.i("Location", lat2 + ", " + lng2);
+                Toast.makeText(getApplicationContext(), "Location acquired", Toast.LENGTH_SHORT).show();
+                stopLocationService();
+                mLocationChangedCounter = 0;
+
+                ArrayList<String[]> storedLocations = new ArrayList<>();
+
+                for (int i = 0; i < DataVariables.array.length; i++) {
+                    Double storedLat = Double.parseDouble(DataVariables.array[i][2]);
+                    Double storedLon = Double.parseDouble(DataVariables.array[i][3]);
+                    if (distance(storedLat, storedLon, LocationService.lat2, LocationService.lng2) < radiusOne) {
+                        Log.i("In Range", DataVariables.array[i][0]);
+                        storedLocations.add(DataVariables.array[i]);
+                    }
+                }
+                MainActivity.filteredLocations = storedLocations;
+                MainActivity.instance.recreate();
+            }
         }
     }
 
