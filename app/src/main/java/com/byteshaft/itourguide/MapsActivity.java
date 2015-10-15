@@ -1,10 +1,10 @@
 package com.byteshaft.itourguide;
 
 import android.graphics.Color;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.directions.route.Route;
 import com.directions.route.Routing;
@@ -15,22 +15,20 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     public static GoogleMap mMap;
-    Button satelliteButton;
-    Button normalButton;
+    ImageButton mapViewButton;
     LatLng start;
     LatLng end;
-    LatLng wayPoint;
     LatLng targetLocation;
     LatLng currentLocation;
     RoutingListener routingListener;
     public static MarkerOptions a;
+    Boolean mapViewSatellite = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +38,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        MainActivity.isMapActivityOpen = true;
-        LocationService locationService = new LocationService(AppGlobals.getContext());
         routingListener = new RoutingListener() {
             @Override
             public void onRoutingFailure() {
@@ -69,35 +65,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
         start = new LatLng(LocationService.latitude, LocationService.longitude);
-        end = new LatLng(MainActivity.finalLat, MainActivity.finalLon);
-        satelliteButton = (Button) findViewById(R.id.satelliteButton);
-        normalButton = (Button) findViewById(R.id.normalButton);
+        end = new LatLng(ListActivity.finalLat, ListActivity.finalLon);
+        mapViewButton = (ImageButton) findViewById(R.id.button_map_view);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        targetLocation = new LatLng(MainActivity.finalLat, MainActivity.finalLon);
+        targetLocation = new LatLng(ListActivity.finalLat, ListActivity.finalLon);
         currentLocation = new LatLng(LocationService.latitude, LocationService.longitude);
         a = new MarkerOptions().position(targetLocation);
         mMap.addMarker(a);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(targetLocation));
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(MainActivity.finalLat, MainActivity.finalLon), 16.0f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(ListActivity.finalLat, ListActivity.finalLon), 16.0f));
         Routing routing = new Routing.Builder().travelMode(Routing.TravelMode.WALKING)
                 .withListener(routingListener).waypoints(start, end).build();
         routing.execute();
-        satelliteButton.setOnClickListener(new View.OnClickListener() {
+        mapViewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                if (mapViewSatellite) {
+                    mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                    mapViewButton.setImageResource(R.mipmap.ic_satellite);
+                    mapViewSatellite = false;
+                } else {
+                    mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                    mapViewButton.setImageResource(R.mipmap.ic_map_normal);
+                    mapViewSatellite = true;
+                }
             }
         });
-        normalButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-            }
-        });
+        mMap.addMarker(new MarkerOptions().position(LocationService.currentLocationForMap).title("Current Location")
+                .icon(BitmapDescriptorFactory.fromResource
+                        (R.drawable.ic_location)).draggable(true));
+        a.position(LocationService.currentLocationForMap);
     }
 }
