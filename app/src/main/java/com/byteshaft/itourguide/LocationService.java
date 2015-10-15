@@ -2,6 +2,7 @@ package com.byteshaft.itourguide;
 
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
@@ -16,9 +17,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
@@ -34,14 +33,11 @@ public class LocationService extends ContextWrapper implements LocationListener,
     static double longitude;
     public static Double lat2;
     public static Double lng2;
+    public static LatLng currentLocationForMap;
     SharedPreferences sharedPreferences;
 
     public LocationService(Context context) {
         super(context);
-        connectingGoogleApiClient();
-        if (!MainActivity.isMapActivityOpen) {
-            locationTimer().start();
-        }
     }
 
     public void connectingGoogleApiClient() {
@@ -89,22 +85,10 @@ public class LocationService extends ContextWrapper implements LocationListener,
     public void onLocationChanged(Location location) {
         Log.i("Location", "onLocationChanged CALLED..." + mLocationChangedCounter);
         mLocationChangedCounter++;
-        if (MainActivity.isMapActivityOpen) {
-            mLocation = location;
-            double lat = mLocation.getLatitude();
-            double lon = mLocation.getLongitude();
-            LatLng currentLocation = new LatLng(lat, lon);
-            if (mLocationChangedCounter == 1) {
-                MapsActivity.
-                        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Current Location")
-                        .icon(BitmapDescriptorFactory.fromResource
-                                (R.drawable.ic_location)).draggable(true));
-            } else if (mLocationChangedCounter > 1) {
-                MapsActivity.a.position(currentLocation);
-            }
-        }
-         else {
             if (mLocationChangedCounter == 3) {
+                locationTimer().cancel();
+                MainActivity.imageViewName.setImageResource(R.mipmap.name_main);
+                MainActivity.imageViewName.setVisibility(View.VISIBLE);
                 mLocation = location;
                 sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
                 int radiusOne = sharedPreferences.getInt("radius_one", 10);
@@ -114,8 +98,6 @@ public class LocationService extends ContextWrapper implements LocationListener,
                 lng2 = mLocation.getLongitude();
                 Log.i("Location", lat2 + ", " + lng2);
                 Toast.makeText(getApplicationContext(), "Location acquired", Toast.LENGTH_SHORT).show();
-                stopLocationService();
-                mLocationChangedCounter = 0;
 
                 ArrayList<String[]> storedLocations = new ArrayList<>();
 
@@ -127,12 +109,18 @@ public class LocationService extends ContextWrapper implements LocationListener,
                         storedLocations.add(DataVariables.array[i]);
                     }
                 }
-                MainActivity.filteredLocations = storedLocations;
-                MainActivity.instance.recreate();
+                ListActivity.filteredLocations = storedLocations;
+                Intent intent = new Intent(getApplicationContext(), ListActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+            if (mLocationChangedCounter >= 3) {
+                mLocation = location;
+                double lat = mLocation.getLatitude();
+                double lon = mLocation.getLongitude();
+                currentLocationForMap = new LatLng(lat, lon);
             }
         }
-    }
-
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -164,6 +152,7 @@ public class LocationService extends ContextWrapper implements LocationListener,
                         Toast.makeText(getApplicationContext(), "Current location cannot be acquired", Toast.LENGTH_SHORT).show();
                         MainActivity.imageViewName.setImageResource(R.mipmap.name_main);
                         MainActivity.imageViewName.setVisibility(View.VISIBLE);
+                        MainActivity.acquireLocationButton.setClickable(true);
                     }
                 }
             };
