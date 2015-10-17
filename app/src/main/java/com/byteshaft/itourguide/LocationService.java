@@ -36,6 +36,8 @@ public class LocationService extends ContextWrapper implements LocationListener,
     private CountDownTimer mTimer;
     static double latitude;
     static double longitude;
+    double latitude2;
+    double longitude2;
     public static Double lat2;
     public static Double lng2;
     public static LatLng currentLocationForMap;
@@ -97,7 +99,6 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {
-
         if (currentLocationMarker != null) {
             currentLocationMarker.remove();
         }
@@ -136,24 +137,24 @@ public class LocationService extends ContextWrapper implements LocationListener,
                 mLocation = location;
                 double lat = mLocation.getLatitude();
                 double lon = mLocation.getLongitude();
+                latitude2 = location.getLatitude();
+                longitude2 = location.getLongitude();
                 currentLocationForMap = new LatLng(lat, lon);
                 drawMarker(location);
+
             }
         }
 
     private void drawMarker(Location location) {
         if (MapsActivity.isMapsActivityOpened) {
             System.out.println("Running..");
+            LatLng currentPosition = new LatLng(latitude2, longitude2);
             MapsActivity.currentLocationMarker.remove();
-            LatLng currentPosition = new LatLng(location.getLatitude(),location.getLongitude());
             currentLocationMarker = MapsActivity.mMap.addMarker(new MarkerOptions()
                     .position(currentPosition)
                     .snippet("Lat:" + location.getLatitude() + " Lng:" + location.getLongitude())
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                     .title("ME"));
-
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
         }
 
 
