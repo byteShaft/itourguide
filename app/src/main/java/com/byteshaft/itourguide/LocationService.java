@@ -35,9 +35,17 @@ public class LocationService extends ContextWrapper implements LocationListener,
     public static Double lng2;
     public static LatLng currentLocationForMap;
     SharedPreferences sharedPreferences;
+    private static LocationService instance;
 
-    public LocationService(Context context) {
+    private LocationService(Context context) {
         super(context);
+    }
+
+    public static LocationService getInstance(Context context) {
+        if (instance == null) {
+            instance = new LocationService(context);
+        }
+        return instance;
     }
 
     public void connectingGoogleApiClient() {
