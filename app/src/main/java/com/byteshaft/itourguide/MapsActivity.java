@@ -15,6 +15,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -29,6 +30,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     RoutingListener routingListener;
     public static MarkerOptions a;
     Boolean mapViewSatellite = false;
+    static boolean isMapsActivityOpened = false;
+    static Marker currentLocationMarker;
+    static Marker targetLocationMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +42,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        isMapsActivityOpened = true;
         routingListener = new RoutingListener() {
             @Override
             public void onRoutingFailure() {
@@ -52,8 +57,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onRoutingSuccess(PolylineOptions polylineOptions, Route route) {
                 PolylineOptions polyoptions = new PolylineOptions();
-                polyoptions.color(Color.BLUE);
-                polyoptions.width(10);
+                polyoptions.color(Color.RED);
+                polyoptions.width(15);
                 polylineOptions.zIndex(102);
                 polyoptions.addAll(polylineOptions.getPoints());
                 mMap.addPolyline(polyoptions);
@@ -75,9 +80,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         targetLocation = new LatLng(ListActivity.finalLat, ListActivity.finalLon);
         currentLocation = new LatLng(LocationService.latitude, LocationService.longitude);
         a = new MarkerOptions().position(targetLocation);
-        mMap.addMarker(a);
+        targetLocationMarker = mMap.addMarker(a);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(targetLocation));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(ListActivity.finalLat, ListActivity.finalLon), 16.0f));
+        isMapsActivityOpened = true;
         Routing routing = new Routing.Builder().travelMode(Routing.TravelMode.WALKING)
                 .withListener(routingListener).waypoints(start, end).build();
         routing.execute();
@@ -95,9 +101,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-        mMap.addMarker(new MarkerOptions().position(LocationService.currentLocationForMap).title("Current Location")
-                .icon(BitmapDescriptorFactory.fromResource
-                        (R.drawable.ic_location)).draggable(true));
+        currentLocationMarker = mMap.addMarker(new MarkerOptions().position(LocationService.currentLocationForMap).title("Current Location")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
         a.position(LocationService.currentLocationForMap);
     }
 }
