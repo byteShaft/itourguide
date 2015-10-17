@@ -86,14 +86,4 @@ public class ListActivity extends AppCompatActivity {
         }
         super.onBackPressed();
     }
-
-    @Override
-    protected void onPause() {
-        if (locationService.mGoogleApiClient.isConnected()) {
-            locationService.stopLocationService();
-            finish();
-            MainActivity.acquireLocationButton.setClickable(true);
-        }
-        super.onPause();
-    }
 }

@@ -17,7 +17,12 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
@@ -31,11 +36,14 @@ public class LocationService extends ContextWrapper implements LocationListener,
     private CountDownTimer mTimer;
     static double latitude;
     static double longitude;
+    double latitude2;
+    double longitude2;
     public static Double lat2;
     public static Double lng2;
     public static LatLng currentLocationForMap;
     SharedPreferences sharedPreferences;
     private static LocationService instance;
+    Marker currentLocationMarker;
 
     private LocationService(Context context) {
         super(context);
@@ -91,6 +99,9 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {
+        if (currentLocationMarker != null) {
+            currentLocationMarker.remove();
+        }
         Log.i("Location", "onLocationChanged CALLED..." + mLocationChangedCounter);
         mLocationChangedCounter++;
             if (mLocationChangedCounter == 3) {
@@ -126,9 +137,28 @@ public class LocationService extends ContextWrapper implements LocationListener,
                 mLocation = location;
                 double lat = mLocation.getLatitude();
                 double lon = mLocation.getLongitude();
+                latitude2 = location.getLatitude();
+                longitude2 = location.getLongitude();
                 currentLocationForMap = new LatLng(lat, lon);
+                drawMarker(location);
+
             }
         }
+
+    private void drawMarker(Location location) {
+        if (MapsActivity.isMapsActivityOpened) {
+            System.out.println("Running..");
+            LatLng currentPosition = new LatLng(latitude2, longitude2);
+            MapsActivity.currentLocationMarker.remove();
+            currentLocationMarker = MapsActivity.mMap.addMarker(new MarkerOptions()
+                    .position(currentPosition)
+                    .snippet("Lat:" + location.getLatitude() + " Lng:" + location.getLongitude())
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                    .title("ME"));
+        }
+
+
+    }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
