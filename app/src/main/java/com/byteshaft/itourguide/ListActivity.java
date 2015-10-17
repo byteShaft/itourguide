@@ -28,7 +28,7 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_list_activity);
-        locationService = new LocationService(this);
+        locationService = LocationService.getInstance(getApplicationContext());
 
         listView = (ListView) findViewById(R.id.list);
         arrayAdapter = new PlaceList(this, R.layout.row, filteredLocations);
@@ -79,12 +79,21 @@ public class ListActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    public void onBackPressed() {
+        if (locationService.mGoogleApiClient.isConnected()) {
+            locationService.stopLocationService();
+            MainActivity.acquireLocationButton.setClickable(true);
+        }
+        super.onBackPressed();
     }
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
+    protected void onPause() {
+        if (locationService.mGoogleApiClient.isConnected()) {
+            locationService.stopLocationService();
+            finish();
+            MainActivity.acquireLocationButton.setClickable(true);
+        }
+        super.onPause();
     }
 }

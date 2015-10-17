@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        locationService = new LocationService(getApplicationContext());
+        locationService = LocationService.getInstance(getApplicationContext());
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         instance = this;
         locationHelpers = new LocationHelpers(MainActivity.this);
@@ -131,6 +131,14 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (locationService.mGoogleApiClient.isConnected()) {
+            locationService.stopLocationService();
+        }
+        super.onBackPressed();
     }
 
     @Override
