@@ -8,12 +8,15 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     Button okButtonDialog;
     EditText radiusEditTextOne;
     EditText radiusEditTextTwo;
+    Switch enableGeofencing;
     public static ImageView imageViewName;
     LocationService locationService;
     LocationHelpers locationHelpers;
@@ -35,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         locationService = LocationService.getInstance(getApplicationContext());
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        enableGeofencing = (Switch) findViewById(R.id.switch_geofencing);
         instance = this;
         locationHelpers = new LocationHelpers(MainActivity.this);
         imageViewName = (ImageView) findViewById(R.id.iv_name);
@@ -45,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         acquireLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                LocationService.mLocationChangedCounter = 0;
                 acquireLocationButton.setClickable(false);
                 imageViewName.setVisibility(View.GONE);
                 imageViewName.setImageResource(R.mipmap.name_aquiring_location);
@@ -73,6 +79,16 @@ public class MainActivity extends AppCompatActivity {
                     locationHelpers.showGooglePlayServicesError(MainActivity.this);
                 } else {
                     locationService.locationTimer().start();
+                }
+            }
+        });
+        enableGeofencing.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    Log.i("Switch", "ON");
+                } else {
+                    Log.i("Switch", "OFF ");
                 }
             }
         });
@@ -143,6 +159,5 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
-    }
+        super.onPause();}
 }
