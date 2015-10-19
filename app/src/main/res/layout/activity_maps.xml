@@ -1,16 +1,38 @@
 <fragment
-xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:id="@+id/map"
-tools:context="com.byteshaft.itourguide.MapsActivity"
-android:name="com.google.android.gms.maps.SupportMapFragment">
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right|top"
-        android:id="@+id/button_map_view"
-        android:background="@mipmap/ic_satellite"
-        android:layout_margin="15dp"/>
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/map"
+    tools:context="com.byteshaft.itourguide.MapsActivity"
+    android:name="com.google.android.gms.maps.SupportMapFragment">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="top|end">
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_map_view"
+            android:background="@mipmap/ic_satellite"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_current_location"
+            android:background="@mipmap/ic_current_location"
+            android:layout_below="@+id/button_map_view"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_share_fb"
+            android:background="@mipmap/ic_share_fb"
+            android:layout_below="@+id/button_current_location"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"/>
+    </RelativeLayout>
 </fragment>
