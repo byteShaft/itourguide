@@ -25,7 +25,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.ArrayList;
 
 public class LocationService extends ContextWrapper implements LocationListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public GoogleApiClient mGoogleApiClient;
     public Location mLocation;
@@ -62,6 +62,14 @@ public class LocationService extends ContextWrapper implements LocationListener,
         mGoogleApiClient.connect();
     }
 
+    public synchronized void buildGoogleApiClientForGeoFence() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
     protected void createLocationRequest() {
         long INTERVAL = 0;
         long FASTEST_INTERVAL = 0;
@@ -86,6 +94,8 @@ public class LocationService extends ContextWrapper implements LocationListener,
     @Override
     public void onConnected(Bundle bundle) {
         startLocationUpdates();
+
+
     }
 
     @Override

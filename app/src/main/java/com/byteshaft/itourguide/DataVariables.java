@@ -1,5 +1,9 @@
 package com.byteshaft.itourguide;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.HashMap;
+
 public class DataVariables {
     
     static String[] one = new String[] {"Minar-e-Pakistan",
@@ -26,4 +30,17 @@ public class DataVariables {
     static String[] eight = new String[] {"KFC", "KFC IS HERE", "30.195454", "71.442381"};
 
     static String[][] array = {one, two, three, four, five, six, seven, eight};
+
+    public static final HashMap<String, LatLng> BAY_AREA_LANDMARKS = new HashMap<>();
+
+    static {
+
+        for (int i = 0; i < array.length; i++) {
+
+            String name = DataVariables.array[i][0];
+            String storedLat = DataVariables.array[i][2];
+            String storedLon = DataVariables.array[i][3];
+            BAY_AREA_LANDMARKS.put(name, new LatLng(Double.valueOf(storedLat), Double.valueOf(storedLon)));
+        }
+    }
 }
