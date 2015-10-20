@@ -20,7 +20,9 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import com.byteshaft.itourguide.services.GeofenceService;
+
+public class MainActivity extends AppCompatActivity  {
 
     public static Button acquireLocationButton;
     Button cancelButtonDialog;
@@ -88,13 +90,14 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     Log.i("Switch", "ON");
+                    startService(new Intent(getApplicationContext(), GeofenceService.class));
                 } else {
                     Log.i("Switch", "OFF ");
+                    stopService(new Intent(getApplicationContext(), GeofenceService.class));
                 }
             }
         });
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -115,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
             radiusEditTextOne = (EditText) dialog.findViewById(R.id.et_radius_one);
             radiusEditTextOne.setText(String.format("%d", sharedPreferences.getInt("radius_one", 10)));
             radiusEditTextTwo = (EditText) dialog.findViewById(R.id.et_radius_two);
-            radiusEditTextTwo.setText(String.format("%d", sharedPreferences.getInt("radius_two", 2)));
+            radiusEditTextTwo.setText(String.format("%d", sharedPreferences.getInt("radius_two", 500)));
 
             cancelButtonDialog = (Button) dialog.findViewById(R.id.button_dialog_cancel);
             cancelButtonDialog.setOnClickListener(new View.OnClickListener() {

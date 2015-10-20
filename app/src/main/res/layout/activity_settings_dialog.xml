@@ -8,8 +8,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
-        android:text="Search Radius"
-        android:textSize="16dp"
+        android:text="Search Radius (Kilometers)"
+        android:textSize="15dp"
         android:textStyle="bold" />
 
     <EditText
@@ -26,8 +26,8 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginTop="20dp"
-        android:text="GeoFence Radius"
-        android:textSize="16dp"
+        android:text="GeoFence Radius (Meters)"
+        android:textSize="15dp"
         android:textStyle="bold" />
 
     <EditText
@@ -37,7 +37,7 @@
         android:layout_marginBottom="30dp"
         android:layout_gravity="center"
         android:inputType="number"
-        android:maxLength="2"
+        android:maxLength="3"
         android:minWidth="170dp" />
 
     <RelativeLayout
