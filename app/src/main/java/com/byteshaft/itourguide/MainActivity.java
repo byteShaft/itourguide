@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (locationService.mGoogleApiClient.isConnected()) {
+        if (locationService.mGoogleApiClient != null && locationService.mGoogleApiClient.isConnected()) {
             locationService.stopLocationService();
         }
         super.onBackPressed();
