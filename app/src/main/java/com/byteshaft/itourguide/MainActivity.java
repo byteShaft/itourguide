@@ -1,13 +1,17 @@
 package com.byteshaft.itourguide;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -35,24 +39,34 @@ public class MainActivity extends AppCompatActivity  {
     LocationHelpers locationHelpers;
     public static MainActivity instance;
     SharedPreferences sharedPreferences;
+    public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        acquireLocationButton = (Button) findViewById(R.id.button_acquire_location);
         locationService = LocationService.getInstance(getApplicationContext());
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         enableGeofencing = (Switch) findViewById(R.id.switch_geofencing);
         instance = this;
         locationHelpers = new LocationHelpers(MainActivity.this);
         imageViewName = (ImageView) findViewById(R.id.iv_name);
-        acquireLocationButton = (Button) findViewById(R.id.button_acquire_location);
         if (!locationHelpers.playServicesAvailable()) {
             locationHelpers.showGooglePlayServicesError(MainActivity.this);
         }
         acquireLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                    return;
+                }
                 LocationService.mLocationChangedCounter = 0;
                 acquireLocationButton.setClickable(false);
                 imageViewName.setVisibility(View.GONE);
@@ -97,6 +111,27 @@ public class MainActivity extends AppCompatActivity  {
                 }
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+                    enableGeofencing.setClickable(false);
+                    acquireLocationButton.setClickable(true);
+                    Toast.makeText(AppGlobals.getContext(), "Please allow Location access from your " +
+                            "Android Application Settings", Toast.LENGTH_LONG).show();
+                }
+
+            }
+        }
     }
 
     @Override
