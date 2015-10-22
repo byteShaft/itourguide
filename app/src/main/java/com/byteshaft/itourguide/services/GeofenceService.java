@@ -29,10 +29,10 @@ import java.util.Map;
 public class GeofenceService extends Service implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
 
-    private PendingIntent mGeofencePendingIntent;
     protected ArrayList<Geofence> mGeofenceList;
     SharedPreferences mSharedPreferences;
     GoogleApiClient mGoogleApiClient;
+    private PendingIntent mGeofencePendingIntent;
 
     @Override
     public void onCreate() {
@@ -63,15 +63,10 @@ public class GeofenceService extends Service implements
         if (!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, "GoogleApiClient Not Connected", Toast.LENGTH_SHORT).show();
         } else {
-        try {
             LocationServices.GeofencingApi.removeGeofences(
                     mGoogleApiClient,
                     getGeofencePendingIntent()
-            ).setResultCallback(this); // Result processed in onResult().
-        } catch (SecurityException securityException) {
-            Log.e("GeoFence", "Invalid location permission. " +
-                    "You need to use ACCESS_FINE_LOCATION with geofences", securityException);
-            }
+            ).setResultCallback(this);
         }
         mGoogleApiClient.disconnect();
     }
@@ -80,16 +75,11 @@ public class GeofenceService extends Service implements
     @Override
     public void onConnected(Bundle bundle) {
         Log.i("API", "Connected");
-            try {
                 LocationServices.GeofencingApi.addGeofences(
                         mGoogleApiClient,
                         getGeofencingRequest(),
                         getGeofencePendingIntent()
-                ).setResultCallback(this); // Result processed in onResult().
-            } catch (SecurityException securityException) {
-                Log.e("GeoFence", "Invalid location permission. " +
-                        "You need to use ACCESS_FINE_LOCATION with geofences", securityException);
-            }
+                ).setResultCallback(this);
     }
 
     @Override
@@ -129,11 +119,10 @@ public class GeofenceService extends Service implements
                     .setCircularRegion(
                             entry.getValue().latitude,
                             entry.getValue().longitude,
-                            mSharedPreferences.getInt("radius_two", 500)
+                            mSharedPreferences.getInt("radius_two", 1000)
                     )
                     .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                            Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                     .build());
         }
     }

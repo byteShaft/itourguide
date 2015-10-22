@@ -34,9 +34,7 @@ public class DataVariables {
     public static final HashMap<String, LatLng> BAY_AREA_LANDMARKS = new HashMap<>();
 
     static {
-
         for (int i = 0; i < array.length; i++) {
-
             String name = DataVariables.array[i][0];
             String storedLat = DataVariables.array[i][2];
             String storedLon = DataVariables.array[i][3];

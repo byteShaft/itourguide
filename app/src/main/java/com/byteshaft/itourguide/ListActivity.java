@@ -11,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -37,7 +36,6 @@ public class ListActivity extends AppCompatActivity {
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Toast.makeText(getApplicationContext(), String.valueOf(filteredLocations.get(position)[3]), Toast.LENGTH_LONG).show();
                     finalLat = Double.parseDouble(filteredLocations.get(position)[2]);
                     finalLon = Double.parseDouble(filteredLocations.get(position)[3]);
                     startActivity(new Intent(AppGlobals.getContext(), MapsActivity.class));

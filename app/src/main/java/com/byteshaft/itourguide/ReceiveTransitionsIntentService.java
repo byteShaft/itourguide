@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
@@ -34,7 +35,7 @@ public class ReceiveTransitionsIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
         if (geofencingEvent.hasError()) {
-            String errorMessage = GeofenceErrorMessages.getErrorString(this,
+            String errorMessage = GeofenceErrorMessages.getErrorString(
                     geofencingEvent.getErrorCode());
             Log.e(TAG, errorMessage);
             return;
@@ -42,11 +43,9 @@ public class ReceiveTransitionsIntentService extends IntentService {
 
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
 
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
-                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
             String geofenceTransitionDetails = getGeofenceTransitionDetails(
-                    this,
                     geofenceTransition,
                     triggeringGeofences
             );
@@ -59,7 +58,6 @@ public class ReceiveTransitionsIntentService extends IntentService {
     }
 
     private String getGeofenceTransitionDetails(
-            Context context,
             int geofenceTransition,
             List<Geofence> triggeringGeofences) {
 
@@ -74,19 +72,32 @@ public class ReceiveTransitionsIntentService extends IntentService {
     }
 
     private void sendNotification(String notificationDetails) {
-        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+        String[] array = notificationDetails.split(",");
+        Intent notificationIntent = null;
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        if (array.length == 1) {
+            notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+            builder.setContentTitle(notificationDetails);
+            builder.setContentText("Touch to navigate.");
+        } else if (array.length > 1) {
+            ArrayList<String> ids = new ArrayList<>();
+            for (String aString: array) {
+                ids.add(aString);
+            }
+            notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+            builder.setContentTitle("Multiple locations in radius");
+            builder.setContentText("Touch to show.");
+        }
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addParentStack(MainActivity.class);
         stackBuilder.addNextIntent(notificationIntent);
         PendingIntent notificationPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setSmallIcon(R.mipmap.ic_launcher)
+        builder.setSmallIcon(R.mipmap.ic_notification)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(),
                         R.mipmap.ic_launcher))
-                .setColor(Color.RED)
-                .setContentTitle(notificationDetails)
-                .setContentText("Click Here")
+                .setColor(Color.GRAY)
+                .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .setContentIntent(notificationPendingIntent);
         builder.setAutoCancel(true);
         NotificationManager mNotificationManager =
@@ -96,9 +107,7 @@ public class ReceiveTransitionsIntentService extends IntentService {
     private String getTransitionString(int transitionType) {
         switch (transitionType) {
             case Geofence.GEOFENCE_TRANSITION_ENTER:
-                return ("Geofence Entered");
-            case Geofence.GEOFENCE_TRANSITION_EXIT:
-                return ("Geofence Exited");
+                return ("Place Nearby");
             default:
                 return ("Unknown Transition");
         }
