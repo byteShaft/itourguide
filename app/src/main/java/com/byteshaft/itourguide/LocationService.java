@@ -35,11 +35,14 @@ public class LocationService extends ContextWrapper implements LocationListener,
     static double longitude;
     public static double freshLatitude;
     public static double freshLongitude;
+    public static Double targetLat;
+    public static Double targetLon;
     public static LatLng currentLocationForMap;
     SharedPreferences sharedPreferences;
     private static LocationService instance;
     Marker currentLocationMarker;
     Boolean anyPlaceInRange;
+    public static Boolean inAppLocationCalled;
 
     private LocationService(Context context) {
         super(context);
@@ -102,7 +105,7 @@ public class LocationService extends ContextWrapper implements LocationListener,
         }
         Log.i("Location", "onLocationChanged CALLED..." + mLocationChangedCounter);
         mLocationChangedCounter++;
-            if (mLocationChangedCounter == 3) {
+            if (mLocationChangedCounter == 3 && inAppLocationCalled) {
                 anyPlaceInRange = false;
                 locationTimer().cancel();
                 MainActivity.imageViewName.setImageResource(R.mipmap.name_main);
@@ -142,7 +145,6 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
     private void drawMarker(Location location) {
         if (MapsActivity.isMapsActivityOpened) {
-            System.out.println("Running..");
             if (currentLocationMarker != null) {
                 MapsActivity.currentLocationMarker.remove();
             }

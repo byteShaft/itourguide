@@ -71,7 +71,6 @@ public class GeofenceService extends Service implements
         mGoogleApiClient.disconnect();
     }
 
-
     @Override
     public void onConnected(Bundle bundle) {
         Log.i("API", "Connected");
@@ -119,7 +118,7 @@ public class GeofenceService extends Service implements
                     .setCircularRegion(
                             entry.getValue().latitude,
                             entry.getValue().longitude,
-                            mSharedPreferences.getInt("radius_two", 1000)
+                            mSharedPreferences.getInt("radius_two", 3000)
                     )
                     .setExpirationDuration(Geofence.NEVER_EXPIRE)
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)

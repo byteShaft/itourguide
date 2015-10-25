@@ -33,19 +33,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LatLng start;
     LatLng end;
     LatLng targetLocation;
-    LatLng currentLocation;
     RoutingListener routingListener;
     public static MarkerOptions a;
     Boolean mapViewSatellite = false;
     static boolean isMapsActivityOpened = false;
     static Marker currentLocationMarker;
     static Marker targetLocationMarker;
+    LocationService mLocationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        mLocationService = LocationService.getInstance(getApplicationContext());
+        mLocationService.connectingGoogleApiClient();
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -76,8 +78,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         };
-        start = new LatLng(LocationService.latitude, LocationService.longitude);
-        end = new LatLng(ListActivity.finalLat, ListActivity.finalLon);
+        start = LocationService.currentLocationForMap;
+        end = new LatLng(LocationService.targetLat, LocationService.targetLon);
         mapViewButton = (ImageButton) findViewById(R.id.button_map_view);
         facebookShareButton = (ImageButton) findViewById(R.id.button_share_fb);
         showCurrentLocationButton = (ImageButton) findViewById(R.id.button_current_location);
@@ -86,12 +88,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        targetLocation = new LatLng(ListActivity.finalLat, ListActivity.finalLon);
-        currentLocation = new LatLng(LocationService.latitude, LocationService.longitude);
+        targetLocation = new LatLng(LocationService.targetLat, LocationService.targetLon);
         a = new MarkerOptions().position(targetLocation);
         targetLocationMarker = mMap.addMarker(a);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(targetLocation));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(ListActivity.finalLat, ListActivity.finalLon), 16.0f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(LocationService.targetLat, LocationService.targetLon), 16.0f));
         isMapsActivityOpened = true;
         Routing routing = new Routing.Builder().travelMode(Routing.TravelMode.WALKING)
                 .withListener(routingListener).waypoints(start, end).build();

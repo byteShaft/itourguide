@@ -19,8 +19,6 @@ public class ListActivity extends AppCompatActivity {
     static ListView listView;
     static ArrayAdapter arrayAdapter;
     static ArrayList<String[]> filteredLocations;
-    public static Double finalLat;
-    public static Double finalLon;
     LocationService locationService;
 
     @Override
@@ -36,8 +34,8 @@ public class ListActivity extends AppCompatActivity {
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    finalLat = Double.parseDouble(filteredLocations.get(position)[2]);
-                    finalLon = Double.parseDouble(filteredLocations.get(position)[3]);
+                    LocationService.targetLat = Double.parseDouble(filteredLocations.get(position)[2]);
+                    LocationService.targetLon = Double.parseDouble(filteredLocations.get(position)[3]);
                     startActivity(new Intent(AppGlobals.getContext(), MapsActivity.class));
                 }
             });

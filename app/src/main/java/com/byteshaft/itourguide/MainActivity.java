@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity  {
         acquireLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                locationService.inAppLocationCalled = true;
                 LocationService.mLocationChangedCounter = 0;
                 acquireLocationButton.setClickable(false);
                 imageViewName.setVisibility(View.GONE);
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity  {
             radiusEditTextOne = (EditText) dialog.findViewById(R.id.et_radius_one);
             radiusEditTextOne.setText(String.format("%d", sharedPreferences.getInt("radius_one", 10)));
             radiusEditTextTwo = (EditText) dialog.findViewById(R.id.et_radius_two);
-            radiusEditTextTwo.setText(String.format("%d", sharedPreferences.getInt("radius_two", 1000)));
+            radiusEditTextTwo.setText(String.format("%d", sharedPreferences.getInt("radius_two", 3000)));
 
             cancelButtonDialog = (Button) dialog.findViewById(R.id.button_dialog_cancel);
             cancelButtonDialog.setOnClickListener(new View.OnClickListener() {

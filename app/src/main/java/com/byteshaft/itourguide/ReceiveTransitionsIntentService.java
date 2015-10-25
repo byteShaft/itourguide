@@ -1,5 +1,6 @@
 package com.byteshaft.itourguide;
 
+import android.app.Activity;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -7,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -20,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReceiveTransitionsIntentService extends IntentService {
+
+    public static ArrayList<String[]> geofenceNames;
 
     protected static final String TAG = "GeofenceTransitionsIS";
     public ReceiveTransitionsIntentService() {
@@ -46,7 +50,6 @@ public class ReceiveTransitionsIntentService extends IntentService {
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
             String geofenceTransitionDetails = getGeofenceTransitionDetails(
-                    geofenceTransition,
                     triggeringGeofences
             );
 
@@ -58,17 +61,15 @@ public class ReceiveTransitionsIntentService extends IntentService {
     }
 
     private String getGeofenceTransitionDetails(
-            int geofenceTransition,
             List<Geofence> triggeringGeofences) {
 
-        String geofenceTransitionString = getTransitionString(geofenceTransition);
 
         ArrayList triggeringGeofencesIdsList = new ArrayList();
         for (Geofence geofence : triggeringGeofences) {
             triggeringGeofencesIdsList.add(geofence.getRequestId());
         }
-        String triggeringGeofencesIdsString = TextUtils.join(", ", triggeringGeofencesIdsList);
-        return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
+        String triggeringGeofencesIdsString = TextUtils.join(",  ", triggeringGeofencesIdsList);
+        return triggeringGeofencesIdsString;
     }
 
     private void sendNotification(String notificationDetails) {
@@ -76,16 +77,23 @@ public class ReceiveTransitionsIntentService extends IntentService {
         Intent notificationIntent = null;
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         if (array.length == 1) {
-            notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
-            builder.setContentTitle(notificationDetails);
+            notificationIntent = new Intent(getApplicationContext(), MapsActivity.class);
+            builder.setContentTitle("Place Nearby: " + notificationDetails);
             builder.setContentText("Touch to navigate.");
-        } else if (array.length > 1) {
-            ArrayList<String> ids = new ArrayList<>();
-            for (String aString: array) {
-                ids.add(aString);
+            for (int i = 0; i < DataVariables.array.length; i++) {
+                if (TextUtils.equals(notificationDetails.trim(), DataVariables.array[i][0].trim())) {
+                    LocationService.targetLat = Double.parseDouble(DataVariables.array[i][2]);
+                    LocationService.targetLon = Double.parseDouble(DataVariables.array[i][3]);
+                }
             }
-            notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
-            builder.setContentTitle("Multiple locations in radius");
+        } else if (array.length > 1) {
+            ArrayList<String[]> geofenceNames = new ArrayList<>();
+            for (int i = 0; i < array.length; i++) {
+                    geofenceNames.add(array);
+                }
+            PlacesDialogActivity.filteredLocationsForDialog = geofenceNames;
+            notificationIntent = new Intent(getApplicationContext(), PlacesDialogActivity.class);
+            builder.setContentTitle("Multiple places in radius");
             builder.setContentText("Touch to show.");
         }
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -104,12 +112,14 @@ public class ReceiveTransitionsIntentService extends IntentService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(0, builder.build());
     }
-    private String getTransitionString(int transitionType) {
-        switch (transitionType) {
-            case Geofence.GEOFENCE_TRANSITION_ENTER:
-                return ("Place Nearby");
-            default:
-                return ("Unknown Transition");
+
+    public class notificationClick extends Activity {
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            Log.i("String", "Click");
         }
     }
+
 }
