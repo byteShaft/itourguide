@@ -28,7 +28,6 @@ public class LocationService extends ContextWrapper implements LocationListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public GoogleApiClient mGoogleApiClient;
-    public Location mLocation;
     public static int mLocationChangedCounter = 0;
     private LocationRequest mLocationRequest;
     private CountDownTimer mTimer;
@@ -36,10 +35,14 @@ public class LocationService extends ContextWrapper implements LocationListener,
     static double longitude;
     public static double freshLatitude;
     public static double freshLongitude;
+    public static Double targetLat;
+    public static Double targetLon;
     public static LatLng currentLocationForMap;
     SharedPreferences sharedPreferences;
     private static LocationService instance;
     Marker currentLocationMarker;
+    Boolean anyPlaceInRange;
+    public static Boolean inAppLocationCalled;
 
     private LocationService(Context context) {
         super(context);
@@ -60,14 +63,6 @@ public class LocationService extends ContextWrapper implements LocationListener,
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
-    }
-
-    public synchronized void buildGoogleApiClientForGeoFence() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
     }
 
     protected void createLocationRequest() {
@@ -110,16 +105,16 @@ public class LocationService extends ContextWrapper implements LocationListener,
         }
         Log.i("Location", "onLocationChanged CALLED..." + mLocationChangedCounter);
         mLocationChangedCounter++;
-            if (mLocationChangedCounter == 3) {
+            if (mLocationChangedCounter == 3 && inAppLocationCalled) {
+                anyPlaceInRange = false;
                 locationTimer().cancel();
                 MainActivity.imageViewName.setImageResource(R.mipmap.name_main);
                 MainActivity.imageViewName.setVisibility(View.VISIBLE);
-                mLocation = location;
+                MainActivity.acquireLocationButton.setClickable(true);
                 sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
                 int radiusOne = sharedPreferences.getInt("radius_one", 10);
-                latitude = mLocation.getLatitude();
-                longitude = mLocation.getLongitude();
-                Toast.makeText(getApplicationContext(), "Location acquired", Toast.LENGTH_SHORT).show();
+                latitude = location.getLatitude();
+                longitude = location.getLongitude();
 
                 ArrayList<String[]> storedLocations = new ArrayList<>();
 
@@ -129,24 +124,27 @@ public class LocationService extends ContextWrapper implements LocationListener,
                     if (distance(storedLat, storedLon, LocationService.latitude, LocationService.longitude) < radiusOne) {
                         Log.i("In Range", DataVariables.array[i][0]);
                         storedLocations.add(DataVariables.array[i]);
+                        anyPlaceInRange = true;
                     }
                 }
-                ListActivity.filteredLocations = storedLocations;
-                Intent intent = new Intent(getApplicationContext(), ListActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                if (anyPlaceInRange) {
+                    ListActivity.filteredLocations = storedLocations;
+                    Intent intent = new Intent(getApplicationContext(), ListActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(AppGlobals.getContext(), "No place in range", Toast.LENGTH_SHORT).show();
+                    stopLocationService();
+                }
             }
-        if (mLocationChangedCounter >= 3) {
             freshLatitude = location.getLatitude();
             freshLongitude = location.getLongitude();
             currentLocationForMap = new LatLng(freshLatitude, freshLongitude);
             drawMarker(location);
-            }
         }
 
     private void drawMarker(Location location) {
         if (MapsActivity.isMapsActivityOpened) {
-            System.out.println("Running..");
             if (currentLocationMarker != null) {
                 MapsActivity.currentLocationMarker.remove();
             }
@@ -156,8 +154,6 @@ public class LocationService extends ContextWrapper implements LocationListener,
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                     .title("ME"));
         }
-
-
     }
 
     @Override

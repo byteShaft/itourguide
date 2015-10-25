@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -49,6 +48,7 @@ public class MainActivity extends AppCompatActivity  {
         locationService = LocationService.getInstance(getApplicationContext());
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         enableGeofencing = (Switch) findViewById(R.id.switch_geofencing);
+        enableGeofencing.setChecked(sharedPreferences.getBoolean("switch_geofence", false));
         instance = this;
         locationHelpers = new LocationHelpers(MainActivity.this);
         imageViewName = (ImageView) findViewById(R.id.iv_name);
@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity  {
         acquireLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                locationService.inAppLocationCalled = true;
                 if (ContextCompat.checkSelfPermission(MainActivity.this,
                         Manifest.permission.ACCESS_FINE_LOCATION)
                         != PackageManager.PERMISSION_GRANTED) {
@@ -103,11 +104,13 @@ public class MainActivity extends AppCompatActivity  {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    Log.i("Switch", "ON");
+                    Log.i("Switch_GeoFence", "ON");
                     startService(new Intent(getApplicationContext(), GeofenceService.class));
+                    sharedPreferences.edit().putBoolean("switch_geofence", true).apply();
                 } else {
-                    Log.i("Switch", "OFF ");
+                    Log.i("Switch_GeoFence", "OFF ");
                     stopService(new Intent(getApplicationContext(), GeofenceService.class));
+                    sharedPreferences.edit().putBoolean("switch_geofence", false).apply();
                 }
             }
         });
@@ -153,7 +156,7 @@ public class MainActivity extends AppCompatActivity  {
             radiusEditTextOne = (EditText) dialog.findViewById(R.id.et_radius_one);
             radiusEditTextOne.setText(String.format("%d", sharedPreferences.getInt("radius_one", 10)));
             radiusEditTextTwo = (EditText) dialog.findViewById(R.id.et_radius_two);
-            radiusEditTextTwo.setText(String.format("%d", sharedPreferences.getInt("radius_two", 500)));
+            radiusEditTextTwo.setText(String.format("%d", sharedPreferences.getInt("radius_two", 3000)));
 
             cancelButtonDialog = (Button) dialog.findViewById(R.id.button_dialog_cancel);
             cancelButtonDialog.setOnClickListener(new View.OnClickListener() {

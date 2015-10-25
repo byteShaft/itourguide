@@ -1,12 +1,10 @@
 package com.byteshaft.itourguide;
 
-import android.content.Context;
-
 import com.google.android.gms.location.GeofenceStatusCodes;
 
 public class GeofenceErrorMessages {
     private GeofenceErrorMessages() {}
-    public static String getErrorString(Context context, int errorCode) {
+    public static String getErrorString(int errorCode) {
         switch (errorCode) {
             case GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE:
                 return ("Geofence Not Available");
