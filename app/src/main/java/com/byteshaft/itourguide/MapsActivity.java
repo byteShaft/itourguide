@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.directions.route.Route;
 import com.directions.route.Routing;
@@ -19,7 +20,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -30,12 +30,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ImageButton mapViewButton;
     ImageButton facebookShareButton;
     ImageButton showCurrentLocationButton;
-    LatLng start;
-    LatLng end;
-    LatLng targetLocation;
-    RoutingListener routingListener;
+    public static RoutingListener routingListener;
     public static MarkerOptions a;
     Boolean mapViewSatellite = false;
+    public static boolean isMapReady;
     static boolean isMapsActivityOpened = false;
     static Marker currentLocationMarker;
     static Marker targetLocationMarker;
@@ -46,12 +44,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         mLocationService = LocationService.getInstance(getApplicationContext());
-        mLocationService.connectingGoogleApiClient();
+        if (!AppGlobals.locationServiceActive) {
+            mLocationService.connectingGoogleApiClient();
+        }
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        isMapsActivityOpened = true;
         routingListener = new RoutingListener() {
             @Override
             public void onRoutingFailure() {
@@ -78,8 +77,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         };
-        start = LocationService.currentLocationForMap;
-        end = new LatLng(LocationService.targetLat, LocationService.targetLon);
         mapViewButton = (ImageButton) findViewById(R.id.button_map_view);
         facebookShareButton = (ImageButton) findViewById(R.id.button_share_fb);
         showCurrentLocationButton = (ImageButton) findViewById(R.id.button_current_location);
@@ -88,15 +85,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        targetLocation = new LatLng(LocationService.targetLat, LocationService.targetLon);
-        a = new MarkerOptions().position(targetLocation);
-        targetLocationMarker = mMap.addMarker(a);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(targetLocation));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(LocationService.targetLat, LocationService.targetLon), 16.0f));
-        isMapsActivityOpened = true;
-        Routing routing = new Routing.Builder().travelMode(Routing.TravelMode.WALKING)
-                .withListener(routingListener).waypoints(start, end).build();
-        routing.execute();
+        isMapReady = true;
+        targetLocationMarker = MapsActivity.mMap.addMarker(new MarkerOptions()
+                .position(AppGlobals.targetLocation)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                .title("Target"));
+        CameraUpdate target = CameraUpdateFactory.newLatLngZoom(
+                AppGlobals.targetLocation, 16.0f);
+        mMap.animateCamera(target);
         mapViewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,13 +134,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         showCurrentLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(LocationService.currentLocationForMap, 16);
-                mMap.animateCamera(cameraUpdate);
+                if (LocationService.mLocationChangedCounter > 0) {
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(LocationService.currentLocationForMap, 16);
+                    mMap.animateCamera(cameraUpdate);
+                } else {
+                    Toast.makeText(AppGlobals.getContext(), "Location Unavailable", Toast.LENGTH_SHORT).show();
+                }
             }
         });
-        currentLocationMarker = mMap.addMarker(new MarkerOptions().position(LocationService.currentLocationForMap).title("Current Location")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-        a.position(LocationService.currentLocationForMap);
     }
 
     private void shareAppLinkViaFacebook() {
@@ -164,5 +161,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl));
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (AppGlobals.locationServiceActive) {
+            mLocationService.stopLocationService();
+        }
+        isMapReady = false;
+        isMapsActivityOpened = false;
+        finish();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isMapsActivityOpened = true;
+    }
+
+    public static void showRoute() {
+        Routing routing = new Routing.Builder().travelMode(Routing.TravelMode.WALKING)
+                .withListener(routingListener).waypoints(LocationService.currentLocationForMap, AppGlobals.targetLocation).build();
+        routing.execute();
     }
 }
