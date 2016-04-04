@@ -19,7 +19,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
@@ -35,16 +34,13 @@ public class LocationService extends ContextWrapper implements LocationListener,
     static double longitude;
     public static double freshLatitude;
     public static double freshLongitude;
-    public static Double targetLat;
-    public static Double targetLon;
     public static LatLng currentLocationForMap;
     SharedPreferences sharedPreferences;
     private static LocationService instance;
-    Marker currentLocationMarker;
     Boolean anyPlaceInRange;
-    public static Boolean inAppLocationCalled;
+    int markerCounter = 0;
 
-    private LocationService(Context context) {
+    LocationService(Context context) {
         super(context);
     }
 
@@ -77,6 +73,8 @@ public class LocationService extends ContextWrapper implements LocationListener,
     public void startLocationUpdates() {
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
+        AppGlobals.locationServiceActive = true;
+        Toast.makeText(AppGlobals.getContext(), "Acquiring Location. Wait . . .", Toast.LENGTH_LONG).show();
     }
 
     public void stopLocationService() {
@@ -84,6 +82,7 @@ public class LocationService extends ContextWrapper implements LocationListener,
                 mGoogleApiClient, this);
         mGoogleApiClient.disconnect();
         locationTimer().cancel();
+        AppGlobals.locationServiceActive = false;
     }
 
     @Override
@@ -100,12 +99,9 @@ public class LocationService extends ContextWrapper implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {
-        if (currentLocationMarker != null) {
-            currentLocationMarker.remove();
-        }
         Log.i("Location", "onLocationChanged CALLED..." + mLocationChangedCounter);
         mLocationChangedCounter++;
-            if (mLocationChangedCounter == 3 && inAppLocationCalled) {
+            if (mLocationChangedCounter == 3 && !MapsActivity.isMapsActivityOpened) {
                 anyPlaceInRange = false;
                 locationTimer().cancel();
                 MainActivity.imageViewName.setImageResource(R.mipmap.name_main);
@@ -137,22 +133,22 @@ public class LocationService extends ContextWrapper implements LocationListener,
                     stopLocationService();
                 }
             }
-            freshLatitude = location.getLatitude();
-            freshLongitude = location.getLongitude();
-            currentLocationForMap = new LatLng(freshLatitude, freshLongitude);
-            drawMarker(location);
+            currentLocationForMap = new LatLng(location.getLatitude(), location.getLongitude());
+            handleMarker();
         }
 
-    private void drawMarker(Location location) {
-        if (MapsActivity.isMapsActivityOpened) {
-            if (currentLocationMarker != null) {
-                MapsActivity.currentLocationMarker.remove();
+    private void handleMarker() {
+        if (MapsActivity.isMapsActivityOpened && MapsActivity.isMapReady) {
+            if (markerCounter > 0) {
+                MapsActivity.currentLocationMarker.setPosition(currentLocationForMap);
+            } else {
+                MapsActivity.currentLocationMarker = MapsActivity.mMap.addMarker(new MarkerOptions()
+                        .position(currentLocationForMap)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                        .title("ME"));
+                MapsActivity.showRoute();
             }
-            currentLocationMarker = MapsActivity.mMap.addMarker(new MarkerOptions()
-                    .position(currentLocationForMap)
-                    .snippet("Lat:" + location.getLatitude() + " Lng:" + location.getLongitude())
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                    .title("ME"));
+            markerCounter ++;
         }
     }
 

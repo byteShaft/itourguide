@@ -17,6 +17,7 @@ import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,8 +83,7 @@ public class ReceiveTransitionsIntentService extends IntentService {
             builder.setContentText("Touch to navigate.");
             for (int i = 0; i < DataVariables.array.length; i++) {
                 if (TextUtils.equals(notificationDetails.trim(), DataVariables.array[i][0].trim())) {
-                    LocationService.targetLat = Double.parseDouble(DataVariables.array[i][2]);
-                    LocationService.targetLon = Double.parseDouble(DataVariables.array[i][3]);
+                    AppGlobals.targetLocation = new LatLng(Double.parseDouble(DataVariables.array[i][2]), Double.parseDouble(DataVariables.array[i][3]));
                 }
             }
         } else if (array.length > 1) {

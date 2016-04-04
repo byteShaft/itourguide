@@ -13,6 +13,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 
 public class PlacesDialogActivity extends Activity {
@@ -26,9 +28,6 @@ public class PlacesDialogActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_places_dialog);
-        mLocationService = LocationService.getInstance(getApplicationContext());
-        mLocationService.inAppLocationCalled = false;
-        mLocationService.connectingGoogleApiClient();
         mListViewDialog = (ListView) findViewById(R.id.lv_places_dialog);
         mArrayAdapterDialog = new PlaceListForDialog(this, R.layout.row, filteredLocationsForDialog);
         mListViewDialog.setAdapter(mArrayAdapterDialog);
@@ -36,14 +35,9 @@ public class PlacesDialogActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String s = (String) ((TextView) view.findViewById(R.id.tv_name)).getText();
-
-                MapsActivity.isMapsActivityOpened = true;
-
                 for (int i = 0; i < DataVariables.array.length; i++) {
                     if (TextUtils.equals(s.trim(), DataVariables.array[i][0].trim())) {
-                        LocationService.targetLat = Double.parseDouble(DataVariables.array[i][2]);
-                        LocationService.targetLon = Double.parseDouble(DataVariables.array[i][3]);
-
+                        AppGlobals.targetLocation = new LatLng(Double.parseDouble(DataVariables.array[i][2]), Double.parseDouble(DataVariables.array[i][3]));
                         Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
@@ -87,9 +81,6 @@ public class PlacesDialogActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (!MapsActivity.isMapsActivityOpened) {
-            mLocationService.stopLocationService();
-        }
         finish();
     }
 }

@@ -12,6 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 
 public class ListActivity extends AppCompatActivity {
@@ -20,6 +22,7 @@ public class ListActivity extends AppCompatActivity {
     static ArrayAdapter arrayAdapter;
     static ArrayList<String[]> filteredLocations;
     LocationService locationService;
+    boolean itemClick;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +37,9 @@ public class ListActivity extends AppCompatActivity {
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    LocationService.targetLat = Double.parseDouble(filteredLocations.get(position)[2]);
-                    LocationService.targetLon = Double.parseDouble(filteredLocations.get(position)[3]);
+                    itemClick = true;
+                    AppGlobals.targetLocation = new LatLng(Double.parseDouble(filteredLocations.get(position)[2]),
+                            Double.parseDouble(filteredLocations.get(position)[3]));
                     startActivity(new Intent(AppGlobals.getContext(), MapsActivity.class));
                 }
             });
@@ -81,5 +85,14 @@ public class ListActivity extends AppCompatActivity {
             MainActivity.acquireLocationButton.setClickable(true);
         }
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (locationService.mGoogleApiClient.isConnected() && !itemClick) {
+            locationService.stopLocationService();
+        }
+        finish();
     }
 }

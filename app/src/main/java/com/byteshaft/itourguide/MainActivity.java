@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity  {
         acquireLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                locationService.inAppLocationCalled = true;
                 if (ContextCompat.checkSelfPermission(MainActivity.this,
                         Manifest.permission.ACCESS_FINE_LOCATION)
                         != PackageManager.PERMISSION_GRANTED) {
@@ -132,7 +131,6 @@ public class MainActivity extends AppCompatActivity  {
                     Toast.makeText(AppGlobals.getContext(), "Please allow Location access from your " +
                             "Android Application Settings", Toast.LENGTH_LONG).show();
                 }
-
             }
         }
     }
@@ -193,7 +191,7 @@ public class MainActivity extends AppCompatActivity  {
 
     @Override
     public void onBackPressed() {
-        if (locationService.mGoogleApiClient != null && locationService.mGoogleApiClient.isConnected()) {
+        if (AppGlobals.locationServiceActive) {
             locationService.stopLocationService();
         }
         super.onBackPressed();
@@ -201,5 +199,11 @@ public class MainActivity extends AppCompatActivity  {
 
     @Override
     protected void onPause() {
-        super.onPause();}
+        super.onPause();
+            if (AppGlobals.locationServiceActive) {
+                if (locationService.mLocationChangedCounter < 3) {
+                locationService.stopLocationService();
+            }
+        }
+    }
 }
